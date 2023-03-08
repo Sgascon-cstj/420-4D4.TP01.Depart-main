@@ -14,7 +14,20 @@ services:
   # Le serveur de bases de données mariaDB
   # # Service disponible sur le port 3307
   # ===========================================
-  
+  mabd:
+    image: mariadb
+    ports:
+      - 3307:3306
+    environment:
+      - MARIADB_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD} 
+      - MARIADB_DATABASE=${MYSQL_DATABASE} 
+      - MARIADB_USER=${MYSQL_USER} 
+      - MARIADB_PASSWORD=${MYSQL_PASSWORD}
+    volumes:
+      - ./bdwp:/var/lib/mysql
+    networks:
+      - reseauWP
+#    command: top      
   # <-------------------------------------- FIN
 
   
@@ -24,7 +37,15 @@ services:
   # à partir des fichiers du dossier 'contenu-web'
   # # Service disponible sur le port 80
   # ==============================================
-  
+  serveurweb:
+    image: nginx
+    container_name: serveurWEB
+    build: ./contenu-web
+    ports:
+    - "80:80"
+    networks:
+      - reseauWP
+
   # <-------------------------------------- FIN
 
 
@@ -33,7 +54,19 @@ services:
   # Construction et démarrage de WordPress
   # Service disponible sur le port 88
   # ===========================================
-
+  wordpress:
+    image: samuelgascon/wp_perso
+    build: ./wordpress
+    ports:
+      - 88:80
+    environment:
+      - WORDPRESS_DB_HOST=${WORDPRESS_DB_HOST}
+      - WORDPRESS_DB_USER=${WORDPRESS_DB_USER}
+      - WORDPRESS_DB_PASSWORD=${WORDPRESS_DB_PASSWORD}
+      - WORDPRESS_DB_NAME=wp
+      - WORDPRESS_TABLE_PREFIX=wp_
+    networks:
+      - reseauWP
     # Exemple d'utilisation des variables du fichier .env
     #    environment:
     #      - WORDPRESS_DB_HOST=${WP_HOST}
@@ -112,6 +145,10 @@ services:
 # ===========================================
 # Les réseaux de l'application
 # ===========================================
+networks:
+  reseauWP:
+    name: reseauWP
+    driver: bridge
 
 
 # <-------------------------------------- FIN
