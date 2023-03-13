@@ -94,6 +94,8 @@ services:
     container_name: pmm_server
     volumes:
       - ./pmm-data:/srv
+    depends_on:
+      - postgres  
   # <-------------------------------------- FIN
 
   # ===========================================
