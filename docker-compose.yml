@@ -87,7 +87,7 @@ services:
   # Le serveur d'activités percona PMM
   # Service disponible sur le port 83
   # ===========================================
-  pmm:
+  pmm-server:
     image: percona/pmm-server:2
     ports:
       - 83:80
@@ -107,7 +107,7 @@ services:
     image: postgres
     restart: always
     ports:
-      - 5432:5432
+      - ${POSTGRES_PORT}:5432
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -121,7 +121,15 @@ services:
   # Démarrage de postgresAdmin
   # Service disponible sur le port 81
   # ===========================================
-  
+  pg-admin:
+    image: dpage/pgadmin4
+    ports:
+      - 81:80
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+    networks:
+      - reseauPMM  
 
   # <-------------------------------------- FIN
 
@@ -135,16 +143,19 @@ services:
   pmm-client-postgres:
     image: "perconalab/pmm-client:dev-latest"
     container_name: pmm-client-postgres
-      # Voici les variables nécessaires au fonctionnement du client PMM
-    #      - PMM_SERVER=pmm-server:443
-    #      - PMM_USER=
-    #      - PMM_PASSWORD=
-    #      - DB_TYPE=postgresql
-    #      - DB_HOST=
-    #      - DB_PORT=
-    #      - DB_USER=${POSTGRES_USER}
-    #      - DB_PASSWORD=${POSTGRES_PASSWORD}
-  
+    volumes:
+      - ./pmm-client-data:/srv
+    environment:  
+      - PMM_SERVER=pmm-server:443
+      - PMM_USER=${PMM_USER}
+      - PMM_PASSWORD=${PMM_PASSWORD}
+      - DB_TYPE=postgresql
+      - DB_HOST=postgres
+      - DB_PORT=${POSTGRES_PORT}
+      - DB_USER=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+    networks:
+      - reseauPMM
   
   # <-------------------------------------- FIN
 
