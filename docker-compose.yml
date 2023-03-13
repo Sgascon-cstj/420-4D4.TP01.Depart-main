@@ -17,7 +17,7 @@ services:
   mabd:
     image: mariadb
     ports:
-      - 3307:3306
+      - ${DB_PORT}:3306
     environment:
       - MARIADB_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD} 
       - MARIADB_DATABASE=${MYSQL_DATABASE} 
@@ -38,11 +38,11 @@ services:
   # # Service disponible sur le port 80
   # ==============================================
   serveurweb:
-    image: nginx
+    image: nginx/samuelgascon
     container_name: serveurWEB
     build: ./contenu-web
     ports:
-    - "80:80"
+      - "80:80"
     networks:
       - reseauWP
 
@@ -63,10 +63,13 @@ services:
       - WORDPRESS_DB_HOST=${WORDPRESS_DB_HOST}
       - WORDPRESS_DB_USER=${WORDPRESS_DB_USER}
       - WORDPRESS_DB_PASSWORD=${WORDPRESS_DB_PASSWORD}
-      - WORDPRESS_DB_NAME=wp
-      - WORDPRESS_TABLE_PREFIX=wp_
+      - WORDPRESS_DB_NAME=${WP_DB_NAME}
+      - WORDPRESS_TABLE_PREFIX=${WP_PREFIX}
     networks:
       - reseauWP
+    depends_on:
+      - mabd
+        
     # Exemple d'utilisation des variables du fichier .env
     #    environment:
     #      - WORDPRESS_DB_HOST=${WP_HOST}
@@ -84,8 +87,13 @@ services:
   # Le serveur d'activités percona PMM
   # Service disponible sur le port 83
   # ===========================================
-
-
+  pmm:
+    image: percona/pmm-server:2
+    ports:
+      - 83:80
+    container_name: pmm_server
+    volumes:
+      - ./pmm-data:/srv
   # <-------------------------------------- FIN
 
   # ===========================================
@@ -93,7 +101,16 @@ services:
   # Service disponible sur le port 5432
   # ===========================================
   
-  
+  postgres:
+    image: postgres
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    networks:
+      - reseauPMM  
     # <-------------------------------------- FIN
 
   
@@ -136,7 +153,17 @@ services:
   # Service disponible sur le port 82
   # ===========================================
     # NOTE: Il ne faut pas utiliser la méthode: PMA_ARBITRARY=1
-
+  phpmyadmin:
+    image: phpmyadmin
+    networks: 
+        - reseauWP       
+    ports:
+      - "82:80"
+    environment:
+      - PMA_HOST=mabd
+      - PMA_PORT=3306
+    depends_on:
+      - mabd
 
   # <-------------------------------------- FIN
 
@@ -149,6 +176,8 @@ networks:
   reseauWP:
     name: reseauWP
     driver: bridge
-
+  reseauPMM:
+    name: reseauPMM
+    driver: bridge
 
 # <-------------------------------------- FIN
