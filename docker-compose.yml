@@ -16,6 +16,7 @@ services:
   # ===========================================
   mabd:
     image: mariadb
+    restart: always
     ports:
       - ${DB_PORT}:3306
     environment:
@@ -39,6 +40,7 @@ services:
   # ==============================================
   serveurweb:
     image: nginx/samuelgascon
+    restart: always
     container_name: serveurWEB
     build: ./contenu-web
     ports:
@@ -91,11 +93,12 @@ services:
     image: percona/pmm-server:2
     ports:
       - 83:80
-    container_name: pmm_server
     volumes:
       - ./pmm-data:/srv
     depends_on:
       - postgres  
+    networks:
+      - reseauPMM  
   # <-------------------------------------- FIN
 
   # ===========================================
@@ -123,13 +126,14 @@ services:
   # ===========================================
   pg-admin:
     image: dpage/pgadmin4
+    restart: always
     ports:
       - 81:80
     environment:
-      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
-      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
     networks:
-      - reseauPMM  
+      - reseauPMM
 
   # <-------------------------------------- FIN
 
@@ -142,11 +146,10 @@ services:
   # ================================================
   pmm-client-postgres:
     image: "perconalab/pmm-client:dev-latest"
+    restart: always
     container_name: pmm-client-postgres
-    volumes:
-      - ./pmm-client-data:/srv
     environment:  
-      - PMM_SERVER=pmm-server:443
+      - PMM_SERVER="pmm-server:443"
       - PMM_USER=${PMM_USER}
       - PMM_PASSWORD=${PMM_PASSWORD}
       - DB_TYPE=postgresql
@@ -168,6 +171,7 @@ services:
     # NOTE: Il ne faut pas utiliser la méthode: PMA_ARBITRARY=1
   phpmyadmin:
     image: phpmyadmin
+    restart: always
     networks: 
         - reseauWP       
     ports:
