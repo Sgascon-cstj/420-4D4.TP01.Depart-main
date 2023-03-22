@@ -18,7 +18,7 @@ services:
     image: mariadb
     restart: always
     ports:
-      - ${DB_PORT}:3306
+      - 3307:3306
     environment:
       - MARIADB_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD} 
       - MARIADB_DATABASE=${MYSQL_DATABASE} 
@@ -62,11 +62,11 @@ services:
     ports:
       - 88:80
     environment:
-      - WORDPRESS_DB_HOST=${WORDPRESS_DB_HOST}
-      - WORDPRESS_DB_USER=${WORDPRESS_DB_USER}
-      - WORDPRESS_DB_PASSWORD=${WORDPRESS_DB_PASSWORD}
+      - WORDPRESS_DB_HOST=${WP_HOST}
+      - WORDPRESS_DB_USER=${WP_USER}
+      - WORDPRESS_DB_PASSWORD=${WP_PASSWORD}
       - WORDPRESS_DB_NAME=${WP_DB_NAME}
-      - WORDPRESS_TABLE_PREFIX=${WP_PREFIX}
+      - WORDPRESS_TABLE_PREFIX=2151866_
     networks:
       - reseauWP
     depends_on:
@@ -110,7 +110,7 @@ services:
     image: postgres
     restart: always
     ports:
-      - ${POSTGRES_PORT}:5432
+      - 5432:5432
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -151,10 +151,10 @@ services:
     environment:  
       - PMM_SERVER="pmm-server:443"
       - PMM_USER=${PMM_USER}
-      - PMM_PASSWORD=${PMM_PASSWORD}
+      - PMM_PASSWORD=${PMM_PASS}
       - DB_TYPE=postgresql
       - DB_HOST=postgres
-      - DB_PORT=${POSTGRES_PORT}
+      - DB_PORT=5432
       - DB_USER=${POSTGRES_USER}
       - DB_PASSWORD=${POSTGRES_PASSWORD}
     depends_on:
@@ -185,7 +185,6 @@ services:
       - mabd
 
   # <-------------------------------------- FIN
-
 
 
 # ===========================================
